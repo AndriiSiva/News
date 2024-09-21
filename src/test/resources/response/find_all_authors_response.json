@@ -1,0 +1,20 @@
+{
+  "authors": [
+    {
+      "id": 1,
+      "name": "Author 1",
+      "newsList": 2,
+      "comments": 2
+    },
+    {
+      "id": 2,
+      "name": "Author 2",
+      "newsList": 2,
+      "comments": 2
+    }
+  ],
+  "totalElements": 2,
+  "totalPages": 1,
+  "currentPage": 0,
+  "pageSize": 10
+}

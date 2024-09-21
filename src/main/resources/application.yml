@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: rest-news-service
+  main:
+    allow-circular-references: true
+  jpa:
+    generate-ddl: true
+    open-in-view: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://localhost:5432/news_db
+    username: postgres
+    password: newspassword
+    hikari:
+      schema: app_schema
+      connection-init-sql: create schema if not exists app_schema
+      connection-timeout: 10000
+server:
+  port: 8080
+  url: http://localhost:8081
+
+app:
+  check-author-api-header: false
+  author-api-key: 12345
