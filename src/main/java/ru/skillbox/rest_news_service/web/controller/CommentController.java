@@ -10,8 +10,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.skillbox.rest_news_service.model.Comment;
+import ru.skillbox.rest_news_service.aop.CheckOwnership;
 import ru.skillbox.rest_news_service.service.CommentService;
 import ru.skillbox.rest_news_service.web.model.*;
 
@@ -34,29 +37,39 @@ public class CommentController {
                     content = {@Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")
                     })
     })
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CommentResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(commentService.findById(id));
     }
 
+
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping
-    public ResponseEntity<CommentResponse> create(@RequestBody @Valid UpsertCommentRequest request) {
+    public ResponseEntity<CommentResponse> create(@RequestBody @Valid UpsertCommentRequest request,
+                                                  @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(commentService.save(request));
+                .body(commentService.save(request, userDetails));
     }
 
+
+    @CheckOwnership
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponse> update(@PathVariable("id") Long commentId, @RequestParam Long authorId,
-                                                  @RequestBody UpsertCommentRequest request) {
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
+    public ResponseEntity<CommentResponse> update(@PathVariable("id") Long commentId,
+                                                  @AuthenticationPrincipal UserDetails userDetails,
+                                                  @Valid @RequestBody UpsertCommentRequest request) {
 
-        return ResponseEntity.ok(commentService.update(commentId, request));
+        return ResponseEntity.ok(commentService.update(commentId, request, userDetails));
     }
 
+    @CheckOwnership
     @Operation(summary = "Delete comment by id",
             description = "Delete comment by id",
             tags = {"comment, id"})
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestParam Long authorId) {
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
 
         commentService.deleteById(id);
 

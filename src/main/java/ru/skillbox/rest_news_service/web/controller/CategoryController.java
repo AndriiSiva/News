@@ -10,8 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.skillbox.rest_news_service.model.Category;
 import ru.skillbox.rest_news_service.service.CategoryService;
 import ru.skillbox.rest_news_service.web.model.*;
 
@@ -24,6 +24,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @Operation(summary = "Get categories", description = "Get all categories", tags = {"category"})
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @GetMapping
     public ResponseEntity<CategoryListResponse> findAll(@RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "10") int size) {
@@ -43,12 +44,14 @@ public class CategoryController {
                     content = {@Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")
                     })
     })
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable Long id) {
 
         return ResponseEntity.ok((categoryService.findById(id)));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PostMapping
     public ResponseEntity<CategoryResponse> create(@RequestBody @Valid UpsertCategoryRequest request) {
 
@@ -56,15 +59,18 @@ public class CategoryController {
                 .body(categoryService.save(request));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(@PathVariable("id") Long categoryId,
                                                    @RequestBody @Valid UpsertCategoryRequest request) {
         return ResponseEntity.ok(categoryService.update(categoryId, request));
     }
 
+
     @Operation(summary = "Delete category by id",
             description = "Delete category by id",
             tags = {"category, id"})
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.deleteById(id);

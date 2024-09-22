@@ -2,10 +2,10 @@ package ru.skillbox.rest_news_service.utils;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.Category;
-import ru.skillbox.rest_news_service.model.Comment;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.entity.Author;
+import ru.skillbox.rest_news_service.entity.Category;
+import ru.skillbox.rest_news_service.entity.Comment;
+import ru.skillbox.rest_news_service.entity.News;
 
 import java.lang.reflect.Field;
 
@@ -32,6 +32,10 @@ public class BeanUtils {
 
         if (source.getComments() != null && !source.getComments().isEmpty()) {
             destination.setComments(source.getComments());
+        }
+
+        if (source.getRoles() != null && !source.getRoles().isEmpty()) {
+            destination.setRoles(source.getRoles());
         }
     }
 

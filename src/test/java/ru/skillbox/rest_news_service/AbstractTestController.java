@@ -6,10 +6,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.Category;
-import ru.skillbox.rest_news_service.model.Comment;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.entity.Author;
+import ru.skillbox.rest_news_service.entity.Category;
+import ru.skillbox.rest_news_service.entity.Comment;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.web.model.AuthorResponse;
 import ru.skillbox.rest_news_service.web.model.NewsResponse;
 

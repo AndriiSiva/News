@@ -1,6 +1,7 @@
 package ru.skillbox.rest_news_service.service;
 
-import ru.skillbox.rest_news_service.model.News;
+import org.springframework.security.core.userdetails.UserDetails;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.web.model.*;
 
 
@@ -11,9 +12,9 @@ public interface NewsService {
 
     News findNewsById(Long id);
 
-    NewsResponse save(UpsertNewsRequest request);
+    NewsResponse save(UpsertNewsRequest request, UserDetails userDetails);
 
-    NewsResponse update(Long newsId, UpsertNewsRequest request);
+    NewsResponse update(Long newsId, UpdateNewsRequest request, UserDetails userDetails);
 
     void deleteById(Long id);
 

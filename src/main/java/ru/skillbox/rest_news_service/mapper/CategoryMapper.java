@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
-import ru.skillbox.rest_news_service.model.Category;
+import ru.skillbox.rest_news_service.entity.Category;
 import ru.skillbox.rest_news_service.web.model.*;
 
 import java.util.List;

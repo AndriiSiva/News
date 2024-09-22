@@ -10,14 +10,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.aop.CheckOwnership;
+import ru.skillbox.rest_news_service.entity.Role;
+import ru.skillbox.rest_news_service.entity.RoleType;
 import ru.skillbox.rest_news_service.service.AuthorService;
 import ru.skillbox.rest_news_service.service.CategoryService;
 import ru.skillbox.rest_news_service.web.model.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/author")
@@ -28,6 +30,7 @@ public class AuthorController {
     private final AuthorService authorService;
     private final CategoryService categoryService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Get authors", description = "Get all authors", tags = {"author"})
     @GetMapping
     public ResponseEntity<AuthorListResponse> findAll(@RequestParam(defaultValue = "0") int page,
@@ -48,38 +51,50 @@ public class AuthorController {
                     content = {@Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")
                     })
     })
+
+    @CheckOwnership
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @GetMapping("/{id}")
-    public ResponseEntity<AuthorResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<AuthorResponse> findById(@AuthenticationPrincipal UserDetails userDetails,
+                                                   @PathVariable Long id) {
 
         return ResponseEntity.ok((authorService.findById(id)));
     }
 
-    @PostMapping
-    public ResponseEntity<AuthorResponse> create(@RequestBody @Valid UpsertAuthorRequest request) {
+    @PostMapping("/account")
+    public ResponseEntity<AuthorResponse> createAuthorAccount(@RequestBody @Valid UpsertAuthorRequest request,
+                                                              @RequestParam RoleType roleType) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authorService.save((request)));
+                .body(authorService.create(request, Role.from(roleType)));
     }
 
+    @CheckOwnership
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @PutMapping("/{id}")
-    public ResponseEntity<AuthorResponse> update(@PathVariable("id") Long authorId,
-                                                 @RequestBody @Valid UpsertAuthorRequest request) {
+    public ResponseEntity<AuthorResponse> update(@PathVariable("id") Long Id,
+                                                 @RequestBody @Valid UpdateAuthorRequest request,
+                                                 @RequestParam(required = false) RoleType roleType,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
 
-        return ResponseEntity.ok(authorService.update(request, authorId));
+        return ResponseEntity.ok(authorService.update(request, Id, Role.from(roleType)));
     }
 
+    @CheckOwnership
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_MODERATOR')")
     @Operation(summary = "Delete author by id",
             description = "Delete author by id",
             tags = {"author, id"})
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         authorService.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/save-with-news")
-    public ResponseEntity<AuthorResponse> createWithNews(@RequestBody @Valid CreateAuthorWithNewsRequest request) {
+    @PostMapping("/account/create-with-news")
+    public ResponseEntity<AuthorResponse> createWithNews(@RequestBody @Valid UpsertAuthorRequestWithNews request,
+                                                         @RequestParam RoleType roleType) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(authorService.saveWithNews(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authorService.saveWithNews(request, Role.from(roleType)));
     }
 }

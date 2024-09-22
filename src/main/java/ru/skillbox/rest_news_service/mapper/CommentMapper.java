@@ -3,7 +3,7 @@ package ru.skillbox.rest_news_service.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
-import ru.skillbox.rest_news_service.model.Comment;
+import ru.skillbox.rest_news_service.entity.Comment;
 import ru.skillbox.rest_news_service.web.model.*;
 
 import java.util.List;
@@ -12,12 +12,10 @@ import java.util.List;
 public interface CommentMapper {
 
     @Mapping(source = "commentText", target = "commentText")
-    @Mapping(source = "authorId", target = "author.id")
     @Mapping(source = "newsId", target = "news.id")
     Comment requestToComment(UpsertCommentRequest request);
 
     @Mapping(source = "commentId", target = "id")
-    @Mapping(source = "request.authorId", target = "author.id")
     @Mapping(source = "request.newsId", target = "news.id")
     Comment requestToComment(Long commentId, UpsertCommentRequest request);
 

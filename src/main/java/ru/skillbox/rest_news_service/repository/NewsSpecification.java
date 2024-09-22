@@ -1,7 +1,7 @@
 package ru.skillbox.rest_news_service.repository;
 
 import org.springframework.data.jpa.domain.Specification;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.web.model.NewsFilter;
 
 public interface NewsSpecification {

@@ -1,6 +1,6 @@
 package ru.skillbox.rest_news_service.service;
 
-import ru.skillbox.rest_news_service.model.Category;
+import ru.skillbox.rest_news_service.entity.Category;
 import ru.skillbox.rest_news_service.web.model.CategoryListResponse;
 import ru.skillbox.rest_news_service.web.model.CategoryResponse;
 import ru.skillbox.rest_news_service.web.model.UpsertCategoryRequest;

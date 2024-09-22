@@ -1,17 +1,15 @@
-package ru.skillbox.rest_news_service.model;
+package ru.skillbox.rest_news_service.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang3.builder.ToStringExclude;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Entity(name = "authors")
+@Entity
+@Table(name = "authors")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,9 +17,10 @@ public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "author_id")
     private Long id;
 
-    @Column(name = "author_name")
+
     private String name;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
@@ -35,7 +34,15 @@ public class Author {
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
-      public void addNews(News news) {
+    private String password;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @Builder.Default
+    private List<Role> roles = new ArrayList<>();
+
+    public void addNews(News news) {
         newsList.add(news);
     }
 

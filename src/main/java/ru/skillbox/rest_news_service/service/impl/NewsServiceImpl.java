@@ -3,12 +3,13 @@ package ru.skillbox.rest_news_service.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import ru.skillbox.rest_news_service.aop.CheckOwnership;
 import ru.skillbox.rest_news_service.exception.EntityNotFoundException;
 import ru.skillbox.rest_news_service.mapper.NewsMapper;
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.entity.Author;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.repository.NewsRepository;
 import ru.skillbox.rest_news_service.repository.NewsSpecification;
 import ru.skillbox.rest_news_service.service.AuthorService;
@@ -48,25 +49,33 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public NewsResponse save(UpsertNewsRequest request) {
-        News news = newsMapper.requestToNews(request, categoryService, authorService);
+    public NewsResponse save(UpsertNewsRequest request, UserDetails userDetails) {
+        News news = newsMapper.requestToNews(request, categoryService, authorService, userDetails);
         return newsMapper.newsToResponse(newsRepository.save(news));
     }
 
     @Override
-    @CheckOwnership
-    public NewsResponse update(Long newsId, UpsertNewsRequest request) {
-        News updatedNews = newsMapper.requestToNews(newsId, request, categoryService, authorService);
+    public NewsResponse update(Long newsId, UpdateNewsRequest request, UserDetails userDetails) {
+
+        News exictedNews = findNewsById(newsId);
+        if (request.getCategoryId() == null) {
+            request.setCategoryId(exictedNews.getCategory().getId());
+        }
+        if (request.getNewsText() == null) {
+            request.setNewsText(exictedNews.getNewsText());
+        }
+
+        News updatedNews = newsMapper.requestToNews(newsId, request, categoryService, authorService, userDetails);
         Author author = authorService.findAuthorById(updatedNews.getAuthor().getId());
-        News exictedNews = findNewsById(updatedNews.getId());
+
         BeanUtils.copyNewsNonNullProperties(updatedNews, exictedNews);
         exictedNews.setAuthor(author);
         return newsMapper.newsToResponse(newsRepository.save(exictedNews));
     }
 
     @Override
-    @CheckOwnership
     public void deleteById(Long id) {
+        findById(id);
         newsRepository.deleteById(id);
     }
 

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.skillbox.rest_news_service.exception.EntityNotFoundException;
 import ru.skillbox.rest_news_service.mapper.CategoryMapper;
-import ru.skillbox.rest_news_service.model.Category;
+import ru.skillbox.rest_news_service.entity.Category;
 import ru.skillbox.rest_news_service.repository.CategoryRepository;
 import ru.skillbox.rest_news_service.service.CategoryService;
 import ru.skillbox.rest_news_service.utils.BeanUtils;

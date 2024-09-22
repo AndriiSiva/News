@@ -1,14 +1,15 @@
 package ru.skillbox.rest_news_service.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import ru.skillbox.rest_news_service.aop.CheckOwnership;
 import ru.skillbox.rest_news_service.exception.EntityNotFoundException;
 import ru.skillbox.rest_news_service.mapper.CommentMapper;
 import ru.skillbox.rest_news_service.mapper.NewsMapper;
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.Comment;
-import ru.skillbox.rest_news_service.model.News;
+import ru.skillbox.rest_news_service.entity.Author;
+import ru.skillbox.rest_news_service.entity.Comment;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.repository.AuthorRepository;
 import ru.skillbox.rest_news_service.repository.CommentRepository;
 import ru.skillbox.rest_news_service.repository.NewsRepository;
@@ -51,65 +52,56 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentResponse save(UpsertCommentRequest request) {
+    public CommentResponse save(UpsertCommentRequest request, UserDetails userDetails) {
 
-        Author author = authorRepository.findById(request.getAuthorId()).orElseThrow(() ->
-                new EntityNotFoundException(MessageFormat.format("Автор с ID {0} не найден", request.getAuthorId())));
+        Author author = authorRepository.findByName(userDetails.getUsername()).orElseThrow(() ->
+                new EntityNotFoundException(MessageFormat.format("Автор с именем {0} не найден", userDetails.getUsername())));
 
         News news = newsService.findNewsById(request.getNewsId());
 
         Comment comment = commentMapper.requestToComment(request);
 
-
         news.setComment(comment);
-        newsRepository.save(news);
         comment.setNews(news);
         comment.setAuthor(author);
         return commentMapper.commentToResponse(commentRepository.save(comment));
     }
 
     @Override
-    @CheckOwnership
-    public CommentResponse update(Long commentId, UpsertCommentRequest request) {
+    public CommentResponse update(Long commentId, UpsertCommentRequest request, UserDetails userDetails) {
 
         // Найдем существующий комментарий по commentId
-        Comment existingComment = findCommentById(commentId);
+        Comment exictedComment = findCommentById(commentId);
+
+        if (request.getCommentText() == null) {
+            request.setCommentText(exictedComment.getCommentText());
+        }
+        if (request.getNewsId() == null) {
+            request.setNewsId(exictedComment.getNews().getId());
+        }
+
 
         // Обновим поля комментария на основе запроса
         Comment comment = commentMapper.requestToComment(commentId, request);
-        BeanUtils.copyCommentNonNullProperties(existingComment, comment);
+        BeanUtils.copyCommentNonNullProperties(comment, exictedComment);
 
         // Найдем автора комментария по ID
-        Author author = authorRepository.findById(request.getAuthorId())
-                .orElseThrow(() -> new EntityNotFoundException(MessageFormat.format("Автор с ID {0} не найден", request.getAuthorId())));
+        Author author = authorRepository.findByName(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException(MessageFormat.format("Автор с именем {0} не найден", userDetails.getUsername())));
 
-        existingComment.setAuthor(author);
+        exictedComment.setAuthor(author);
 
 
         News news = newsService.findNewsById(request.getNewsId());
-        existingComment.setNews(news);
+        exictedComment.setNews(news);
 
-
-        // Сохраняем обновленный комментарий
-        commentRepository.save(existingComment);
-
-        // Обновляем новость, если это необходимо
-        if (existingComment.getNews() != null) {
-            news = existingComment.getNews();
-            news.setComment(existingComment);
-            UpsertNewsRequest upsertNewsRequest = new UpsertNewsRequest();
-            upsertNewsRequest.setNewsText(news.getNewsText());
-            // Дополните остальными необходимыми полями
-            newsService.save(upsertNewsRequest);
-        }
-
-        return commentMapper.commentToResponse(existingComment);
+        return commentMapper.commentToResponse(commentRepository.save(exictedComment));
     }
 
 
     @Override
-    @CheckOwnership
     public void deleteById(Long id) {
+        findById(id);
         commentRepository.deleteById(id);
     }
 }

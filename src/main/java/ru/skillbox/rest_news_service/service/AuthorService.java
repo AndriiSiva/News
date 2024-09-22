@@ -1,26 +1,23 @@
 package ru.skillbox.rest_news_service.service;
 
-import ru.skillbox.rest_news_service.model.Author;
-import ru.skillbox.rest_news_service.model.News;
-import ru.skillbox.rest_news_service.web.model.AuthorListResponse;
-import ru.skillbox.rest_news_service.web.model.AuthorResponse;
-import ru.skillbox.rest_news_service.web.model.CreateAuthorWithNewsRequest;
-import ru.skillbox.rest_news_service.web.model.UpsertAuthorRequest;
-
-import java.util.List;
+import ru.skillbox.rest_news_service.entity.Author;
+import ru.skillbox.rest_news_service.entity.Role;
+import ru.skillbox.rest_news_service.web.model.*;
 
 public interface AuthorService {
     AuthorListResponse findAll(int page, int size);
 
     AuthorResponse findById(Long id);
 
+    Author findByUsername(String username);
+
     Author findAuthorById(Long id);
 
-    AuthorResponse save(UpsertAuthorRequest request);
+    AuthorResponse create(UpsertAuthorRequest request, Role role);
 
-    AuthorResponse update(UpsertAuthorRequest request, Long authorId);
+    AuthorResponse update(UpdateAuthorRequest request, Long authorId, Role from);
 
     void deleteById(Long id);
 
-    AuthorResponse saveWithNews(CreateAuthorWithNewsRequest request);
+    AuthorResponse saveWithNews(UpsertAuthorRequestWithNews request, Role role);
 }

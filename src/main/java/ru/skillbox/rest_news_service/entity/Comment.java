@@ -1,4 +1,4 @@
-package ru.skillbox.rest_news_service.model;
+package ru.skillbox.rest_news_service.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

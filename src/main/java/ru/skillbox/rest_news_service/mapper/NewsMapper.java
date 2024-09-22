@@ -4,8 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
-import ru.skillbox.rest_news_service.model.Comment;
-import ru.skillbox.rest_news_service.model.News;
+import org.springframework.jdbc.object.UpdatableSqlQuery;
+import org.springframework.security.core.userdetails.UserDetails;
+import ru.skillbox.rest_news_service.entity.Comment;
+import ru.skillbox.rest_news_service.entity.News;
 import ru.skillbox.rest_news_service.service.AuthorService;
 import ru.skillbox.rest_news_service.service.CategoryService;
 import ru.skillbox.rest_news_service.web.model.*;
@@ -45,16 +47,21 @@ public interface NewsMapper {
     }
 
 
-    default News requestToNews(UpsertNewsRequest request, CategoryService categoryService, AuthorService authorService) {
+    default News requestToNews(UpsertNewsRequest request, CategoryService categoryService,
+                               AuthorService authorService, UserDetails userDetails) {
         News news = new News();
         news.setNewsText(request.getNewsText());
         news.setCategory(categoryService.findCategoryById(request.getCategoryId()));
-        news.setAuthor(authorService.findAuthorById(request.getAuthorId()));
+        news.setAuthor(authorService.findByUsername(userDetails.getUsername()));
         return news;
     }
 
-    default News requestToNews(Long orderId, UpsertNewsRequest request, CategoryService categoryService, AuthorService authorService) {
-        News news = requestToNews(request, categoryService, authorService);
+    default News requestToNews(Long orderId, UpdateNewsRequest request, CategoryService categoryService,
+                               AuthorService authorService, UserDetails userDetails) {
+        UpsertNewsRequest request1 = new UpsertNewsRequest();
+        request1.setNewsText(request.getNewsText());
+        request1.setCategoryId(request.getCategoryId());
+        News news = requestToNews(request1, categoryService, authorService, userDetails);
         news.setId(orderId);
         return news;
     }
